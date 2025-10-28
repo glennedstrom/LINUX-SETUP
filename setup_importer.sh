@@ -382,6 +382,35 @@ main() {
         print_status "xclip already installed"
     fi
 
+    # Check for less
+    if ! command_exists less; then
+        print_warning "less not found. Installing..."
+        install_package "less" "less"
+        print_status "less installed successfully"
+    else
+        print_status "less already installed"
+    fi
+
+    # Check for tldr
+    if ! command_exists tldr; then
+        print_warning "tldr not found. Installing..."
+        install_package "tldr" "tldr"
+        print_status "tldr installed successfully"
+        
+        # Update tldr cache to ensure it has content
+        print_info "Updating tldr cache (this may take a moment)..."
+        tldr --update > /dev/null 2>&1 || true
+        print_status "tldr cache updated"
+    else
+        print_status "tldr already installed"
+        # Check if cache exists, if not update it
+        if [ ! -d "$HOME/.local/share/tldr" ] && [ ! -d "$HOME/.cache/tldr" ]; then
+            print_warning "tldr cache not found. Updating..."
+            tldr --update > /dev/null 2>&1 || true
+            print_status "tldr cache updated"
+        fi
+    fi
+
     # ============================
     # Fonts (Nerd Fonts)
     # ============================
