@@ -552,6 +552,44 @@ main() {
     fi
 
     # ============================
+    # System Fonts (for browsers and applications)
+    # ============================
+    
+    print_info "Checking system fonts..."
+    
+    FONTS_TO_INSTALL=()
+    
+    # Check each font package
+    if command_exists pacman; then
+        ! package_installed_arch "ttf-liberation" && FONTS_TO_INSTALL+=("ttf-liberation")
+        ! package_installed_arch "noto-fonts" && FONTS_TO_INSTALL+=("noto-fonts")
+        ! package_installed_arch "noto-fonts-emoji" && FONTS_TO_INSTALL+=("noto-fonts-emoji")
+        ! package_installed_arch "ttf-roboto" && FONTS_TO_INSTALL+=("ttf-roboto")
+    elif command_exists apt-get; then
+        ! dpkg -l | grep -q fonts-liberation && FONTS_TO_INSTALL+=("fonts-liberation")
+        ! dpkg -l | grep -q fonts-noto && FONTS_TO_INSTALL+=("fonts-noto")
+        ! dpkg -l | grep -q fonts-noto-color-emoji && FONTS_TO_INSTALL+=("fonts-noto-color-emoji")
+        ! dpkg -l | grep -q fonts-roboto && FONTS_TO_INSTALL+=("fonts-roboto")
+    fi
+    
+    if [ ${#FONTS_TO_INSTALL[@]} -gt 0 ]; then
+        print_warning "Installing missing system fonts: ${FONTS_TO_INSTALL[*]}"
+        if command_exists pacman; then
+            sudo pacman -S --noconfirm --needed "${FONTS_TO_INSTALL[@]}"
+        elif command_exists apt-get; then
+            sudo apt-get update && sudo apt-get install -y "${FONTS_TO_INSTALL[@]}"
+        fi
+        print_status "System fonts installed"
+        
+        # Update font cache
+        print_info "Updating font cache..."
+        fc-cache -fv > /dev/null 2>&1
+        print_status "Font cache updated"
+    else
+        print_status "All system fonts already installed"
+    fi
+
+    # ============================
     # Bashrc Customizations
     # ============================
     
