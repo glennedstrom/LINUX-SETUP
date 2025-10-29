@@ -315,6 +315,17 @@ main() {
         print_status "pip3 already installed"
     fi
 
+    # Check for uv (fast Python package installer)
+    if ! command_exists uv; then
+        print_warning "uv not found. Installing..."
+        print_info "Installing uv via curl..."
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        print_status "uv installed successfully"
+        print_info "Note: You may need to restart your shell or run 'source ~/.bashrc' to use uv"
+    else
+        print_status "uv already installed"
+    fi
+
     # Check for Node.js
     if ! command_exists node; then
         print_warning "Node.js not found. Installing..."
@@ -371,6 +382,95 @@ main() {
         print_status "bat installed successfully"
     else
         print_status "bat already installed"
+    fi
+
+    # Check for tree
+    if ! command_exists tree; then
+        print_warning "tree not found. Installing..."
+        install_package "tree" "tree"
+        print_status "tree installed successfully"
+    else
+        print_status "tree already installed"
+    fi
+
+    # Check for gdb
+    if ! command_exists gdb; then
+        print_warning "gdb not found. Installing..."
+        install_package "gdb" "gdb"
+        print_status "gdb installed successfully"
+    else
+        print_status "gdb already installed"
+    fi
+
+    # Check for valgrind
+    if ! command_exists valgrind; then
+        print_warning "valgrind not found. Installing..."
+        install_package "valgrind" "valgrind"
+        print_status "valgrind installed successfully"
+    else
+        print_status "valgrind already installed"
+    fi
+
+    # Check for rsync
+    if ! command_exists rsync; then
+        print_warning "rsync not found. Installing..."
+        install_package "rsync" "rsync"
+        print_status "rsync installed successfully"
+    else
+        print_status "rsync already installed"
+    fi
+
+    # Check for lazygit
+    if ! command_exists lazygit; then
+        print_warning "lazygit not found. Installing..."
+        if command_exists yay; then
+            print_info "Installing lazygit via yay..."
+            yay -S --noconfirm lazygit
+            print_status "lazygit installed successfully"
+        elif command_exists pacman; then
+            # Try community repo first
+            install_package "lazygit" "lazygit"
+            print_status "lazygit installed successfully"
+        elif command_exists apt-get; then
+            # For Ubuntu/Debian, use PPA or direct binary
+            print_info "Installing lazygit via binary..."
+            LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*')
+            curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz"
+            tar xf lazygit.tar.gz lazygit
+            sudo install lazygit /usr/local/bin
+            rm lazygit lazygit.tar.gz
+            print_status "lazygit installed successfully"
+        fi
+    else
+        print_status "lazygit already installed"
+    fi
+
+    # Check for delta (git-delta)
+    if ! command_exists delta; then
+        print_warning "git-delta not found. Installing..."
+        if command_exists pacman; then
+            install_package "git-delta" "git-delta"
+            print_status "git-delta installed successfully"
+        elif command_exists apt-get; then
+            print_info "Installing git-delta via binary..."
+            DELTA_VERSION=$(curl -s "https://api.github.com/repos/dandavison/delta/releases/latest" | grep -Po '"tag_name": "\K[^"]*')
+            curl -Lo delta.deb "https://github.com/dandavison/delta/releases/latest/download/git-delta_${DELTA_VERSION}_amd64.deb"
+            sudo dpkg -i delta.deb
+            rm delta.deb
+            print_status "git-delta installed successfully"
+        fi
+        
+        # Configure delta for git
+        print_info "Configuring git to use delta..."
+        git config --global core.pager delta
+        git config --global interactive.diffFilter "delta --color-only"
+        git config --global delta.navigate true
+        git config --global delta.side-by-side true
+        git config --global merge.conflictstyle diff3
+        git config --global diff.colorMoved default
+        print_status "git configured to use delta"
+    else
+        print_status "git-delta already installed"
     fi
 
     # Check for xclip
