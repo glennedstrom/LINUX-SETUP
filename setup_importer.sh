@@ -234,16 +234,6 @@ main() {
         print_status "Neovim config already exists"
     fi
 
-    # Check for Learn directory
-    LEARN_DIR="$HOME/Learn"
-    if ! directory_exists "$LEARN_DIR"; then
-        print_warning "Learn directory not found. Cloning Learn repository..."
-        git clone https://github.com/glennedstrom/Learn.git "$LEARN_DIR"
-        print_status "Learn repository cloned to ~/Learn"
-    else
-        print_status "Learn directory already exists"
-    fi
-
     # Check for curl
     if ! command_exists curl; then
         print_warning "curl not found. Installing..."
